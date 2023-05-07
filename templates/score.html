@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>Python Quiz Results</h1>
+  <div class="score">
+    <p>You scored {{ score }} out of {{ total }}.</p>
+    {% if score<=6 %}
+    <b>you have failed</b><br>
+    <a href="{{url_for('pqindex')}}"><button>RETAKE</button></a>
+    {% else %}
+    <b>Congrats</b><br>
+    <a href="{{url_for('certificatedownload')}}"><button>Download Your Certificate</button></a> 
+    <!-- <a href="{{url_for('certificate')}}"><button>Generate Certificate</button></a> -->
+    {% endif %}
+    {% for question in questions %}
+      {% if user_answers.get(question['question']) == question['answer'] %}
+        <p class="correct">{{ question['question'] }}: <br>{{ user_answers.get(question['question']) }}</p>
+      {% else %}
+        <p class="incorrect">{{ question['question'] }}: {{ user_answers.get(question['question']) }} <br>(Correct answer: {{ question['answer'] }})</p>
+      {% endif %}
+    {% endfor %}
+    
+  </div>
+{% endblock %}

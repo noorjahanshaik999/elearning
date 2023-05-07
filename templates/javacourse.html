@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Course</title>
+    <style>
+        h1{
+            text-align: center;
+            font-size: 40px;
+        }
+        .pyvedio{
+            margin-left: 30%;
+            font-size: 30px;
+        }
+        .reflinks{
+            text-align: center;
+            font-size: 30px;
+        }
+        .button {
+        background-color: #4CAF50; /* Green */
+        border: none;
+        color: white;
+        padding: 16px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 20px;
+        margin: 4px 2px;
+        transition-duration: 0.4s;
+        cursor: pointer;
+        }
+        .button1 {
+        background-color: rgb(247, 54, 5); 
+        color: black; 
+         border: 2px solid #4CAF50;
+         border-radius: 20%;
+        }
+        .button1:hover {
+        background-color: #4CAF50;
+        color: white;
+        }
+        .test{
+            margin-left: 45%;
+        }
+    </style>
+</head>
+<body>
+    <h1> JAVA Course </h1><br><br>
+    <div class="pyvedio">
+        <video width="50%" height="50%" controls>
+            <source src="/static/python.mp4" type="video/mp4">
+         
+          </video>
+          <li><a href="{{url_for('pythonmaterial')}}">Python Material</a> </li>
+    </div>
+    <div class="reflinks">
+        <h3>Reference Links</h3>
+        <li><a href="https://www.w3schools.com/python/">Python Tutorial w3schools</a> </li>
+        <li><a href="https://docs.python.org/3/tutorial/">Python.Org</a></li>
+    </div><br><br><br><br>
+
+    <div class="test">
+            <a href="{{url_for('javaquiz')}}"><button class="button button1">Take Test </button></a>
+    </div>
+</body>
+</html>

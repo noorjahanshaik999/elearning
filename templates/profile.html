@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+    <link rel="stylesheet" href="{{url_for('static',filename='/profile.css')}}">
+    <link rel="stylesheet" href="static/profile.css">
+    <style>
+        h3{
+            text-align: center;
+            
+        }
+        
+        table,th,td{
+            border:2px solid rgb(204, 198, 23);
+            color:white;
+        }
+        .container{
+            text-align: center;
+            margin-top: 5%;
+            margin-left: 35%;
+            
+        }
+        button {
+            backdrop-filter: blur(-2px);
+            background-color: transparent;
+            color: white;
+        }
+        .hai {
+            color: white;
+        }
+    </style>
+    
+</head>
+<body>
+    
+       
+    
+  
+    <!--Profile Pic-->
+    <div class="bgimage">
+        
+        <center>
+    <h1 class="hai">User Dashboard</h1>
+        </center>
+     <!-- <script>
+        const imgDiv = document.querySelector(".user-img");
+const img = document.querySelector("#photo");
+const file = document.querySelector("#file");
+const uploadbtn = document.querySelector("#uploadbtn");
+
+file.addEventListener('change' , function(){
+ const chosedfile = this.files[0];
+ if (chosedfile){
+    const reader = new FileReader();
+    reader.addEventListener('load' , function(){
+        img.setAttribute('src',reader.result);
+    })
+reader.readAsDataURL (chosedfile);
+ } 
+}) -->
+     
+
+    <!--About-->
+    <div class="container">
+            
+            <table>
+                <tr>
+                    <th>Name</th>
+                    <th>Score</th>
+                    <th>Course</th>
+                    <th>Certificate</th>
+                </tr>
+                <tr>
+            <td>{{data[0]}}</td>
+            <td>{{data[1]}}</td>
+            <td>{{data[2]}}</td>
+           <td> <a href="{{url_for('certificatedownload')}}"><button>Download Your Certificate</button></a> </td>
+           </tr>
+        </table>
+    </div>
+</div>
+</div>
+</div>
+</div>
+
+    
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct" crossorigin="anonymous"></script>
+
+
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    
+</head>
+<body>
+    
+<ul class="quiz">
+    <li>
+        <h4>How many letters are there in "JS"?</h4>
+        <ul class="choices">
+            <li>
+                <label
+                    ><input type="radio" name="question0" value="A" /><span
+                        >2</span
+                    ></label
+                >
+            </li>
+            <li>
+                <label
+                    ><input type="radio" name="question0" value="B" /><span
+                        >1</span
+                    ></label
+                >
+            </li>
+            <li>
+                <label
+                    ><input type="radio" name="question0" value="C" /><span
+                        >3</span
+                    ></label
+                >
+            </li>
+            <li>
+                <label
+                    ><input type="radio" name="question0" value="D" /><span
+                        >4</span
+                    ></label
+                >
+            </li>
+        </ul>
+    </li>
+    <li>
+        <h4>How many letters are there in "BMX"?</h4>
+        <ul class="choices">
+            <li>
+                <label
+                    ><input type="radio" name="question1" value="A" /><span
+                        >2</span
+                    ></label
+                >
+            </li>
+            <li>
+                <label
+                    ><input type="radio" name="question1" value="B" /><span
+                        >1</span
+                    ></label
+                >
+            </li>
+            <li>
+                <label
+                    ><input type="radio" name="question1" value="C" /><span
+                        >3</span
+                    ></label
+                >
+            </li>
+            <li>
+                <label
+                    ><input type="radio" name="question1" value="D" /><span
+                        >4</span
+                    ></label
+                >
+            </li>
+        </ul>
+    </li>
+    <li>
+        <h4>How many letters are there in "A"?</h4>
+        <ul class="choices">
+            <li>
+                <label
+                    ><input type="radio" name="question2" value="A" /><span
+                        >2</span
+                    ></label
+                >
+            </li>
+            <li>
+                <label
+                    ><input type="radio" name="question2" value="B" /><span
+                        >1</span
+                    ></label
+                >
+            </li>
+            <li>
+                <label
+                    ><input type="radio" name="question2" value="C" /><span
+                        >3</span
+                    ></label
+                >
+            </li>
+            <li>
+                <label
+                    ><input type="radio" name="question2" value="D" /><span
+                        >4</span
+                    ></label
+                >
+            </li>
+        </ul>
+    </li>
+</ul>
+<button class="view-results" onclick="returnScore()">View Results</button>
+<span id="myresults" class="my-results">My results will appear here</span>
+<script>var answers = ["A", "C", "B"],
+    tot = answers.length;
+function getCheckedValue(radioName) {
+    var radios = document.getElementsByName(radioName);
+    for (var y = 0; y < radios.length; y++)
+        if (radios[y].checked) return radios[y].value;
+}
+function getScore() {
+    var score = 0;
+    for (var i = 0; i < tot; i++)
+        if (getCheckedValue("question" + i) === answers[i]) score += 1;
+    return score;
+}
+function returnScore() {
+    document.getElementById("myresults").innerHTML =
+        "Your score is " + getScore() + "/" + tot;
+    if (getScore() > 2) {
+        console.log("Bravo");
+    }
+}</script>
+</body>
+</html>
