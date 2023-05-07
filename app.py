@@ -1,5 +1,6 @@
 from flask import Flask,redirect,request,render_template,url_for,flash,session,send_file,make_response
-from flask_mysqldb import MySQL
+#from flask_mysqldb import MySQL
+import mysql.connector
 from flask_session import Session
 from otp import genotp
 from adminotp import adotp
@@ -12,11 +13,16 @@ from admintokenreset import admintoken
 from io import BytesIO
 app=Flask(__name__)
 app.secret_key='hfbfe78hjef'
-app.config['SESSION_TYPE']='filesystem'
-app.config['MYSQL_HOST']='localhost'
-app.config['MYSQL_USER']='root'
-app.config['MYSQL_PASSWORD']='admin'
-app.config['MYSQL_DB']='elearning'
+db=os.environ['RDS_DB_NAME']
+user=os.environ['RDS_USERNAME']
+password=os.environ['RDS_PASSWORD']
+host=os.environ['RDS_HOSTNAME']
+port=os.environ['RDS_PORT']
+mydb=mysql.connector.connect(host=host,user=user,password=password,db=db,port=port)
+with mysql.connector.connect(host=host,user=user,password=password,db=db,port=port) as conn:
+    cursor=conn.cursor()
+     cursor.execute("CREATE TABLE signup(username varchar(30) NOT NULL,mobile bigint DEFAULT NULL,email varchar(70) DEFAULT NULL,password varchar(40) DEFAULT NULL,PRIMARY KEY (username))")
+     cursor.execute("CREATE TABLE profile(username varchar(30) DEFAULT NULL,score int DEFAULT NULL,course varchar(10) DEFAULT NULL,KEY username(username),FOREIGN KEY (username) REFERENCES signup(username))")
 Session(app)
 mysql=MySQL(app)
 @app.route('/')
@@ -29,7 +35,7 @@ def signup():
         mobile=request.form['mobile']
         email=request.form['email']
         password=request.form['password']
-        cursor=mysql.connection.cursor()
+        cursor=mydb.cursor(buffered=True)
         cursor.execute('select email from signup')
         data=cursor.fetchall()
         cursor.execute('select mobile from signup')
@@ -56,7 +62,7 @@ def login():
     if request.method=='POST':
         username=request.form['username']
         password=request.form['password']
-        cursor=mysql.connection.cursor()
+        cursor=mydb.cursor(buffered=True)
         cursor.execute('select count(*) from signup where username=%s and password=%s',[username,password])
         count=cursor.fetchone()[0]
         if count==0:
@@ -84,11 +90,11 @@ def otp(otp,name,mobile,email,password):
     if request.method=='POST':
         uotp=request.form['otp']
         if otp==uotp:
-            cursor=mysql.connection.cursor()
+            cursor=mydb.cursor(buffered=True)
             lst=[name,mobile,email,password]
             query='insert into signup values(%s,%s,%s,%s)'
             cursor.execute(query,lst)
-            mysql.connection.commit()
+            mydb.commit()
             cursor.close()
             flash('Details registered')
             return redirect(url_for('login'))
@@ -102,12 +108,11 @@ def addnotes():
             name=request.form['name']
             mobile=request.form['mobile']
             email=request.form['email']
-            
             password=request.form['password']
             cursor=mysql.connection.cursor()
             email=session.get('user')
             cursor.execute('insert into signup(name,mobile,email,password) values(%s,%s,%s,%s)',[name,mobile,email,password])
-            mysql.connection.commit()
+            cursor=mydb.cursor(buffered=True)
             cursor.close()
             flash(f'{email} added successfully')
             return redirect(url_for('noteshome'))
@@ -142,145 +147,16 @@ def createpassword(token):
             npass=request.form['npassword']
             cpass=request.form['cpassword']
             if npass==cpass:
-                cursor=mysql.connection.cursor()
+                cursor=mydb.cursor(buffered=True)
                 cursor.execute('update signup set password=%s where email=%s',[npass,email])
-                mysql.connection.commit()
+                cursor=mydb.cursor(buffered=True)
                 return 'Password reset successfull'
             else:
                 return 'password mismatch'
         return render_template('newpassword.html')
     except:
         return 'link expired try again'
-@app.route('/adminsignup',methods=['GET','POST'])
-def adminsignup():
-    if request.method=='POST':
-        name=request.form['name']
-        mobile=request.form['mobile']
-        email=request.form['email']
-        password=request.form['password']
-        cursor=mysql.connection.cursor()
-        cursor.execute('select email from adminsignup')
-        data=cursor.fetchall()
-        cursor.execute('select mobile from adminsignup')
-        edata=cursor.fetchall()
-        #print(data)
-        if (mobile, ) in edata:
-            flash('User already exisit')
-            return render_template('adminsignup.html')
-        if (email, ) in data:
-            flash('Email id already exisit')
-            return render_template('adminsignup.html')
-        cursor.close()
-        adminotp=adotp()
-        subject='thanks for registering to the application'
-        body=f'use this adminotp to register {adminotp}'
-        sendmail(email,subject,body)
-        return render_template('adminotp.html',adminotp=adminotp,name=name,mobile=mobile,email=email,password=password)
-    else:
-        return render_template('adminsignup.html')    
-@app.route('/adminlogin',methods=['GET','POST'])
-def adminlogin():
-    if session.get('admin'):
-        return redirect(url_for('adminhome'))
-    if request.method=='POST':
-        email=request.form['email']
-        password=request.form['password']
-        cursor=mysql.connection.cursor()
-        cursor.execute('select count(*) from adminsignup where email=%s and password=%s',[email,password])
-        count=cursor.fetchone()[0]
-        if count==0:
-            flash('Invalid email or password')
-            return render_template('adminlogin.html')
-        else:
-            session['admin']=email
-            return redirect(url_for('adminhome'))
-    return render_template('adminlogin.html')
-@app.route('/adminhome')
-def adminhome():
-    if session.get('admin'):
-        return render_template('admindashboard.html')
-    else:
-        #flash('login first')
-        return redirect(url_for('adminlogin'))
-@app.route('/adminlogout')
-def adminlogout():
-    if session.get('admin'):
-        session.pop('admin')
-        return redirect(url_for('adminlogin'))
-    else:
-        flash('already logged out!')
-        return redirect(url_for('adminlogin'))
-@app.route('/adminotp/<adminotp>/<name>/<mobile>/<email>/<password>',methods=['GET','POST'])
-def adminotp(adminotp,name,mobile,email,password):
-    if request.method=='POST':
-        uotp=request.form['adminotp']
-        if adminotp==uotp:
-            cursor=mysql.connection.cursor()
-            lst=[name,mobile,email,password]
-            query='insert into adminsignup values(%s,%s,%s,%s)'
-            cursor.execute(query,lst)
-            mysql.connection.commit()
-            cursor.close()
-            flash('Details registered')
-            return redirect(url_for('adminlogin'))
-        else:
-            flash('Wrong otp')
-            return render_template('adminotp.html',adminotp=adminotp,name=name,mobile=mobile,email=email,password=password)
-@app.route('/adminnotes',methods=['GET','POST'])
-def adminnotes():
-    if session.get('admin'):
-        if request.method=='POST':
-            name=request.form['name']
-            mobile=request.form['mobile']
-            email=request.form['email']
-            password=request.form['password']
-            cursor=mysql.connection.cursor()
-            email=session.get('admin')
-            cursor.execute('insert into adminsignup(name,mobile,email,password) values(%s,%s,%s,%s)',[name,mobile,email,password])
-            mysql.connection.commit()
-            cursor.close()
-            flash(f'{email} added successfully')
-            return redirect(url_for('noteshome'))
-        return render_template('adminhome.html')
-    else:
-        return redirect(url_for('adminlogin'))
-@app.route('/adminforgetpassword',methods=['GET','POST'])
-def adminforgetpassword():
-    if request.method=='POST':
-        email=request.form['id']
-        cursor=mysql.connection.cursor()
-        cursor.execute('select email from adminsignup')
-        data=cursor.fetchall()
-        if (email,) in data:
-            cursor.execute('select email from adminsignup where email=%s',[email])
-            data=cursor.fetchone()[0]
-            cursor.close()
-            subject=f'Reset password for {data}'
-            body=f'reset the password using -{request.host+url_for("admincreatepassword",admintoken=admintoken(email,120))}'
-            sendmail(data,subject,body)
-            flash('Reset link sent to your mail')
-            return redirect(url_for('adminlogin'))
-        else:
-            return 'Invalid user email'
-    return render_template('forgot.html')
-@app.route('/admincreatepassword/<admintoken>',methods=['GET','POST'])
-def admincreatepassword(admintoken):
-    try:
-        s=Serializer(app.config['SECRET_KEY'])
-        email=s.loads(admintoken)['admin']
-        if request.method=='POST':
-            npass=request.form['npassword']
-            cpass=request.form['cpassword']
-            if npass==cpass:
-                cursor=mysql.connection.cursor()
-                cursor.execute('update adminsignup set password=%s where email=%s',[npass,email])
-                mysql.connection.commit()
-                return 'Password reset successfull'
-            else:
-                return 'password mismatch'
-        return render_template('adminnewpassword.html')
-    except:
-        return 'link expired try again'
+
 @app.route('/javamaterial/')
 def javamaterial():
     return render_template('javamaterial.html')
@@ -381,16 +257,11 @@ def quiz():
                 score += 1  
         if score>=6:
             username=session.get('user')
-        
             cursor=mysql.connection.cursor()
             cursor.execute("insert into profile(username,score,course)values(%s,%s,'python')",[username,score])
-            
-
             data=cursor.fetchone()
-            mysql.connection.commit()
+            mydb.commit()
             cursor.close()
-          
-            
         # Display the user's score and any incorrect answers
         return render_template('score.html', score=score, total=len(questions), user_answers=user_answers, questions=questions)
     else:
@@ -405,8 +276,7 @@ def certificate():
         cursor=mysql.connection.cursor()
         cursor.execute("select username,email from signup where username=%s",[session.get('user')])
         data=cursor.fetchone()
-        
-        mysql.connection.commit()
+        mydb.commit()
         cursor.close()
         return render_template('certificate.html',data=data)
 @app.route('/certificatedownload/')
@@ -414,7 +284,7 @@ def certificatedownload():
     cursor=mysql.connection.cursor()
     cursor.execute("select username,email from signup where username=%s",[session.get('user')])
     data=cursor.fetchone()
-    mysql.connection.commit()
+    mydb.commit()
     cursor.close()
     certificate=render_template('certificate.html',data=data)
     response=make_response(certificate)
